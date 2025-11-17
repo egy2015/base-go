@@ -3,8 +3,8 @@ package routes
 import (
 	"api/config"
 	"api/controllers"
-	"api/middleware"
 	"api/messaging"
+	"api/middleware"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
