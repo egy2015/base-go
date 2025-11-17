@@ -2,7 +2,7 @@ package messaging
 
 import (
 	"fmt"
-	"log"
+	// "log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -32,13 +32,13 @@ func NewRabbitMQ(url string) (*RabbitMQ, error) {
 
 func (rmq *RabbitMQ) DeclareExchange(name, kind string) error {
 	return rmq.Channel.ExchangeDeclare(
-		name,   // name
-		kind,   // type
-		true,   // durable
-		false,  // autoDelete
-		false,  // internal
-		false,  // nowait
-		nil,    // arguments
+		name,  // name
+		kind,  // type
+		true,  // durable
+		false, // autoDelete
+		false, // internal
+		false, // nowait
+		nil,   // arguments
 	)
 }
 

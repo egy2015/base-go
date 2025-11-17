@@ -4,13 +4,14 @@ import (
 	"api/messaging"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type SyncTriggerRequest struct {
-	DataType string            `json:"data_type" binding:"required"`
+	DataType string                 `json:"data_type" binding:"required"`
 	Data     map[string]interface{} `json:"data" binding:"required"`
 }
 
@@ -66,5 +67,11 @@ func TriggerSync(rmq *messaging.RabbitMQ) gin.HandlerFunc {
 }
 
 func generateID() string {
-	return time.Now().UnixNano() | 1<<63 // Simple ID generation, replace with UUID for production
+	// 1. Generate the uint64 ID.
+	// The bitwise OR is often used to ensure the value is unique even if the nanosecond part is zero,
+	// or as a flag, but it's not strictly necessary for unique IDs.
+	idVal := uint64(time.Now().UnixNano()) | (uint64(1) << 63)
+
+	// 2. Convert the uint64 value to a string (using base 10).
+	return strconv.FormatUint(idVal, 10)
 }

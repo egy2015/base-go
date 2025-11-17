@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"api/config"
+	// "api/config"
 	"fmt"
 	"net/http"
 	"strings"

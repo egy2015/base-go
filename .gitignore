@@ -1,0 +1,48 @@
+# ----------------------------------------------------------------------
+# 🏗️ Compiled Binaries and Executables
+# ----------------------------------------------------------------------
+# Compiled application binary (e.g., created by RUN go build -o main)
+main
+*.exe
+*.dll
+*.so
+*.dylib
+
+# ----------------------------------------------------------------------
+# 📦 Go Dependency Caching and Vendor Files
+# ----------------------------------------------------------------------
+# Go build cache
+.cache/
+# Go module cache
+.gocache/
+# Vendor directory (if 'go mod vendor' is used)
+/vendor/
+
+# ----------------------------------------------------------------------
+# 🔑 Environment Variables & Configuration
+# ----------------------------------------------------------------------
+# Ignore the actual local environment file which contains secrets/credentials.
+# NOTE: .env.example (your template) IS NOT ignored and should be committed.
+.env
+
+# ----------------------------------------------------------------------
+# 🖥️ Operating System, IDE, and Editor Files
+# ----------------------------------------------------------------------
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# VS Code (Visual Studio Code)
+.vscode/
+
+# IntelliJ/GoLand
+.idea/
+
+# ----------------------------------------------------------------------
+# 🐳 Docker and Temporary Files
+# ----------------------------------------------------------------------
+# Logs, temporary files, etc.
+*.log
+*.tmp

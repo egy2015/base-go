@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	// "fmt"
 	"os"
 
 	"github.com/redis/go-redis/v9"
@@ -9,15 +9,15 @@ import (
 )
 
 type Config struct {
-	DBHost       string
-	DBPort       string
-	DBUser       string
-	DBPassword   string
-	DBName       string
-	RedisAddr    string
-	RabbitMQURL  string
-	JWTSecret    string
-	Environment  string
+	DBHost      string
+	DBPort      string
+	DBUser      string
+	DBPassword  string
+	DBName      string
+	RedisAddr   string
+	RabbitMQURL string
+	JWTSecret   string
+	Environment string
 }
 
 func LoadConfig() *Config {

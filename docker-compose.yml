@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -78,10 +76,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    volumes:
-      - .:/app
-    command: go run cmd/main.go
+    command: ./main
 
+# Minimal Volume and Network Definitions
 volumes:
   postgres_data:
   redis_data:
