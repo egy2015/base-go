@@ -1,48 +1,81 @@
-# ----------------------------------------------------------------------
-# 🏗️ Compiled Binaries and Executables
-# ----------------------------------------------------------------------
-# Compiled application binary (e.g., created by RUN go build -o main)
-main
+# Go build and binaries
 *.exe
+*.exe~
 *.dll
 *.so
+*.so.*
 *.dylib
+bin/
+dist/
 
-# ----------------------------------------------------------------------
-# 📦 Go Dependency Caching and Vendor Files
-# ----------------------------------------------------------------------
-# Go build cache
-.cache/
-# Go module cache
-.gocache/
-# Vendor directory (if 'go mod vendor' is used)
-/vendor/
+# Go test caches
+*.test
+*.out
+.coverage.txt
+.coverage.html
 
-# ----------------------------------------------------------------------
-# 🔑 Environment Variables & Configuration
-# ----------------------------------------------------------------------
-# Ignore the actual local environment file which contains secrets/credentials.
-# NOTE: .env.example (your template) IS NOT ignored and should be committed.
-.env
+# Go module files
+go.sum
 
-# ----------------------------------------------------------------------
-# 🖥️ Operating System, IDE, and Editor Files
-# ----------------------------------------------------------------------
-# macOS
-.DS_Store
-
-# Linux
-*~
-
-# VS Code (Visual Studio Code)
+# IDE and Editor files
 .vscode/
-
-# IntelliJ/GoLand
 .idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
 
-# ----------------------------------------------------------------------
-# 🐳 Docker and Temporary Files
-# ----------------------------------------------------------------------
-# Logs, temporary files, etc.
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Generated endpoint registry
+scripts/.generated_endpoints
+
+# Generated code snippets
+scripts/.routes_snippets/
+
+# Build artifacts
+/bin/
+/dist/
+*.o
+*.a
+
+# Node and npm (for frontend if included)
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-lock.yaml
+dist/
+build/
+
+# Docker
+.docker/
+.dockerignore
+
+# Logs
 *.log
+logs/
+
+# Temporary files
 *.tmp
+*.temp
+tmp/
+
+# Database files (if using local SQLite)
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini

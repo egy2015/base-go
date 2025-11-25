@@ -38,9 +38,9 @@ METHODS="${METHODS//,/}"
 
 # Convert to various case formats for consistency
 SNAKE_CASE=$(echo "$RESOURCE_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/_/g' | sed 's/_$//')
-PASCAL_CASE=$(echo "$SNAKE_CASE" | sed 's/\b$$.$$/\U\1/g')
-CAMEL_CASE=$(echo "$SNAKE_CASE" | sed 's/_$$[a-z]$$/\U\1/g')
-PLURAL_SNAKE="${SNAKE_CASE}"
+PASCAL_CASE=$(echo "$SNAKE_CASE" | sed 's/\b$$.$$/\u\1/g')
+CAMEL_CASE=$(echo "$SNAKE_CASE" | sed 's/\b$$.$$/\u\1/g; s/^$$.$$/\l\1/')
+PLURAL_SNAKE="${SNAKE_CASE}s"
 SINGULAR_SNAKE=$(echo "$SNAKE_CASE" | sed 's/s$//')
 
 # Ensure registry directory exists
@@ -113,7 +113,112 @@ echo -e "${GREEN}✓ Created: models/${SNAKE_CASE}.go${NC}"
 
 # Generate Controller
 echo -e "${BLUE}→ Generating controller...${NC}"
-cat > "controllers/${SNAKE_CASE}.go" << 'CONTROLLER_EOF'
+
+# Build controller functions based on requested methods
+CONTROLLER_FUNCTIONS=""
+
+if [ "$HAS_READ" = true ]; then
+    CONTROLLER_FUNCTIONS+="
+// GetAll_${PASCAL_CASE} retrieves all items
+func GetAll_${PASCAL_CASE}(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var items []models.${PASCAL_CASE}
+		if err := db.Find(&items).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{\"error\": \"Failed to fetch items\"})
+			return
+		}
+		c.JSON(http.StatusOK, items)
+	}
+}
+
+// GetByID_${PASCAL_CASE} retrieves a single item by ID
+func GetByID_${PASCAL_CASE}(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param(\"id\")
+		var item models.${PASCAL_CASE}
+		if err := db.First(&item, id).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.JSON(http.StatusNotFound, gin.H{\"error\": \"Item not found\"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{\"error\": \"Database error\"})
+			return
+		}
+		c.JSON(http.StatusOK, item)
+	}
+}
+"
+fi
+
+if [ "$HAS_CREATE" = true ]; then
+    CONTROLLER_FUNCTIONS+="
+// Create_${PASCAL_CASE} creates a new item
+func Create_${PASCAL_CASE}(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var item models.${PASCAL_CASE}
+		if err := c.ShouldBindJSON(&item); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{\"error\": err.Error()})
+			return
+		}
+
+		if err := db.Create(&item).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{\"error\": \"Failed to create item\"})
+			return
+		}
+		c.JSON(http.StatusCreated, item)
+	}
+}
+"
+fi
+
+if [ "$HAS_UPDATE" = true ]; then
+    CONTROLLER_FUNCTIONS+="
+// Update_${PASCAL_CASE} updates an existing item
+func Update_${PASCAL_CASE}(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param(\"id\")
+		var item models.${PASCAL_CASE}
+		if err := db.First(&item, id).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.JSON(http.StatusNotFound, gin.H{\"error\": \"Item not found\"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{\"error\": \"Database error\"})
+			return
+		}
+
+		if err := c.ShouldBindJSON(&item); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{\"error\": err.Error()})
+			return
+		}
+
+		if err := db.Save(&item).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{\"error\": \"Failed to update item\"})
+			return
+		}
+		c.JSON(http.StatusOK, item)
+	}
+}
+"
+fi
+
+if [ "$HAS_DELETE" = true ]; then
+    CONTROLLER_FUNCTIONS+="
+// Delete_${PASCAL_CASE} deletes an item
+func Delete_${PASCAL_CASE}(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param(\"id\")
+		if err := db.Delete(&models.${PASCAL_CASE}{}, id).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{\"error\": \"Failed to delete item\"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{\"message\": \"Item deleted successfully\"})
+	}
+}
+"
+fi
+
+cat > "controllers/${SNAKE_CASE}.go" << CONTROLLER_EOF
 package controllers
 
 import (
@@ -124,95 +229,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetAll_PLURAL_PASCAL retrieves all items
-func GetAll_PLURAL_PASCAL(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var items []models.MODEL_NAME
-		if err := db.Find(&items).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch items"})
-			return
-		}
-		c.JSON(http.StatusOK, items)
-	}
-}
-
-// GetByID_PLURAL_PASCAL retrieves a single item by ID
-func GetByID_PLURAL_PASCAL(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		var item models.MODEL_NAME
-		if err := db.First(&item, id).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
-				return
-			}
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-			return
-		}
-		c.JSON(http.StatusOK, item)
-	}
-}
-
-// Create_PLURAL_PASCAL creates a new item
-func Create_PLURAL_PASCAL(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var item models.MODEL_NAME
-		if err := c.ShouldBindJSON(&item); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		if err := db.Create(&item).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create item"})
-			return
-		}
-		c.JSON(http.StatusCreated, item)
-	}
-}
-
-// Update_PLURAL_PASCAL updates an existing item
-func Update_PLURAL_PASCAL(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		var item models.MODEL_NAME
-		if err := db.First(&item, id).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
-				return
-			}
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-			return
-		}
-
-		if err := c.ShouldBindJSON(&item); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		if err := db.Save(&item).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update item"})
-			return
-		}
-		c.JSON(http.StatusOK, item)
-	}
-}
-
-// Delete_PLURAL_PASCAL deletes an item
-func Delete_PLURAL_PASCAL(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		id := c.Param("id")
-		if err := db.Delete(&models.MODEL_NAME{}, id).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete item"})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"message": "Item deleted successfully"})
-	}
-}
+${CONTROLLER_FUNCTIONS}
 CONTROLLER_EOF
-
-# Replace placeholders
-sed -i "s/MODEL_NAME/${PASCAL_CASE}/g" "controllers/${SNAKE_CASE}.go"
-sed -i "s/PLURAL_PASCAL/${PASCAL_CASE}/g" "controllers/${SNAKE_CASE}.go"
 
 echo -e "${GREEN}✓ Created: controllers/${SNAKE_CASE}.go${NC}"
 

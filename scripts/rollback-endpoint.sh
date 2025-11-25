@@ -74,26 +74,39 @@ else
     echo -e "${YELLOW}⚠ Migration file not found (manual cleanup may be needed)${NC}"
 fi
 
-# Step 5: Remove from registry
-sed -i "/^${SNAKE_CASE}$/d" "$REGISTRY_FILE"
-echo -e "${GREEN}✓ Removed from registry${NC}"
+# Step 5: Remove from registry first
+if [ -f "$REGISTRY_FILE" ]; then
+    sed -i "/^${SNAKE_CASE}$/d" "$REGISTRY_FILE"
+    echo -e "${GREEN}✓ Removed from registry${NC}"
+fi
 
 echo -e "${BLUE}→ Cleaning up orphaned registry entries...${NC}"
 ORPHANED_COUNT=0
-while IFS= read -r endpoint; do
-    if [ -z "$endpoint" ]; then
-        continue
-    fi
-    
-    if [ ! -f "models/${endpoint}.go" ] || [ ! -f "controllers/${endpoint}.go" ]; then
-        echo -e "${YELLOW}⚠ Removing orphaned entry: ${endpoint}${NC}"
-        sed -i "/^${endpoint}$/d" "$REGISTRY_FILE"
-        ((ORPHANED_COUNT++))
-    fi
-done < "$REGISTRY_FILE"
 
-if [ $ORPHANED_COUNT -gt 0 ]; then
-    echo -e "${GREEN}✓ Cleaned ${ORPHANED_COUNT} orphaned entries${NC}"
+if [ -f "$REGISTRY_FILE" ]; then
+    # Create a temporary file for cleaned registry
+    TEMP_REGISTRY="${REGISTRY_FILE}.tmp"
+    > "$TEMP_REGISTRY"
+    
+    while IFS= read -r endpoint; do
+        # Skip empty lines
+        [ -z "$endpoint" ] && continue
+        
+        # Check if both model and controller exist
+        if [ -f "models/${endpoint}.go" ] && [ -f "controllers/${endpoint}.go" ]; then
+            echo "$endpoint" >> "$TEMP_REGISTRY"
+        else
+            echo -e "${YELLOW}⚠ Removing orphaned entry: ${endpoint}${NC}"
+            ((ORPHANED_COUNT++))
+        fi
+    done < "$REGISTRY_FILE"
+    
+    # Replace original with cleaned version
+    mv "$TEMP_REGISTRY" "$REGISTRY_FILE"
+    
+    if [ $ORPHANED_COUNT -gt 0 ]; then
+        echo -e "${GREEN}✓ Cleaned ${ORPHANED_COUNT} orphaned entries${NC}"
+    fi
 fi
 
 # Summary
