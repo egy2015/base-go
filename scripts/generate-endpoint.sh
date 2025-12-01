@@ -39,7 +39,7 @@ METHODS="${METHODS//,/}"
 # Convert to various case formats for consistency
 SNAKE_CASE=$(echo "$RESOURCE_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/_/g' | sed 's/_$//')
 PASCAL_CASE=$(echo "$SNAKE_CASE" | sed 's/\b$$.$$/\u\1/g')
-CAMEL_CASE=$(echo "$SNAKE_CASE" | sed 's/\b$$.$$/\u\1/g; s/^$$.$$/\l\1/')
+CAMEL_CASE=$(echo "$SNAKE_CASE" | sed 's/\b$$.$$/\u\1/g; s/^.$$.*$$/\l\1/')
 PLURAL_SNAKE="${SNAKE_CASE}s"
 SINGULAR_SNAKE=$(echo "$SNAKE_CASE" | sed 's/s$//')
 
@@ -81,7 +81,7 @@ done
 
 # Generate Model
 echo -e "${BLUE}→ Generating model...${NC}"
-cat > "models/${SNAKE_CASE}.go" << 'MODEL_EOF'
+cat > "models/${SNAKE_CASE}.go" << "MODEL_EOF"
 package models
 
 import (
@@ -90,24 +90,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// MODEL_NAME represents a MODEL_NAME record
-type MODEL_NAME struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	Name      string    `gorm:"not null;index" json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+// ${PASCAL_CASE} represents a ${PASCAL_CASE} record
+type ${PASCAL_CASE} struct {
+	ID        uint      \`gorm:"primaryKey" json:"id"\`
+	Name      string    \`gorm:"not null;index" json:"name"\`
+	CreatedAt time.Time \`json:"created_at"\`
+	UpdatedAt time.Time \`json:"updated_at"\`
+	DeletedAt gorm.DeletedAt \`gorm:"index" json:"deleted_at,omitempty"\`
 }
 
 // TableName specifies the table name
-func (MODEL_NAME) TableName() string {
-	return "PLURAL_SNAKE"
+func (${PASCAL_CASE}) TableName() string {
+	return "${PLURAL_SNAKE}"
 }
 MODEL_EOF
-
-# Replace placeholders
-sed -i "s/MODEL_NAME/${PASCAL_CASE}/g" "models/${SNAKE_CASE}.go"
-sed -i "s/PLURAL_SNAKE/${PLURAL_SNAKE}/g" "models/${SNAKE_CASE}.go"
 
 echo -e "${GREEN}✓ Created: models/${SNAKE_CASE}.go${NC}"
 
@@ -267,11 +263,11 @@ echo -e "${BLUE}→ Generating migration template...${NC}"
 TIMESTAMP=$(date +%s)
 MIGRATION_FILE="database/migrations/${TIMESTAMP}_create_${SNAKE_CASE}_table.sql"
 
-cat > "$MIGRATION_FILE" << 'MIGRATION_EOF'
--- Migration: Create PLURAL_SNAKE table
+cat > "$MIGRATION_FILE" << "MIGRATION_EOF"
+-- Migration: Create ${PLURAL_SNAKE} table
 -- Generated automatically
 
-CREATE TABLE IF NOT EXISTS PLURAL_SNAKE (
+CREATE TABLE IF NOT EXISTS ${PLURAL_SNAKE} (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -279,11 +275,8 @@ CREATE TABLE IF NOT EXISTS PLURAL_SNAKE (
     deleted_at TIMESTAMP NULL
 );
 
-CREATE INDEX idx_PLURAL_SNAKE_deleted_at ON PLURAL_SNAKE(deleted_at);
+CREATE INDEX idx_${PLURAL_SNAKE}_deleted_at ON ${PLURAL_SNAKE}(deleted_at);
 MIGRATION_EOF
-
-# Replace placeholders
-sed -i "s/PLURAL_SNAKE/${PLURAL_SNAKE}/g" "$MIGRATION_FILE"
 
 echo -e "${GREEN}✓ Created: ${MIGRATION_FILE}${NC}"
 

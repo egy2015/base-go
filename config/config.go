@@ -22,15 +22,15 @@ type Config struct {
 
 func LoadConfig() *Config {
 	return &Config{
-		DBHost:      getEnv("DB_HOST", "localhost"),
-		DBPort:      getEnv("DB_PORT", "5432"),
-		DBUser:      getEnv("DB_USER", "postgres"),
-		DBPassword:  getEnv("DB_PASSWORD", "postgres"),
-		DBName:      getEnv("DB_NAME", "api_db"),
-		RedisAddr:   getEnv("REDIS_ADDR", "localhost:6379"),
-		RabbitMQURL: getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
-		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
-		Environment: getEnv("ENVIRONMENT", "development"),
+		DBHost:      getEnv("DB_HOST", ""),
+		DBPort:      getEnv("DB_PORT", ""),
+		DBUser:      getEnv("DB_USER", ""),
+		DBPassword:  getEnv("DB_PASSWORD", ""),
+		DBName:      getEnv("DB_NAME", ""),
+		RedisAddr:   getEnv("REDIS_ADDR", ""),
+		RabbitMQURL: getEnv("RABBITMQ_URL", ""),
+		JWTSecret:   getEnv("JWT_SECRET", ""),
+		Environment: getEnv("ENVIRONMENT", ""),
 	}
 }
 

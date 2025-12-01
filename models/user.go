@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type User struct {
@@ -19,10 +17,4 @@ type User struct {
 
 func (User) TableName() string {
 	return "users"
-}
-
-// Hook to clear sensitive data before returning
-func (u *User) AfterFind(tx *gorm.DB) error {
-	u.Password = ""
-	return nil
 }
