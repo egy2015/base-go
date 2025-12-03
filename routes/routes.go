@@ -3,7 +3,8 @@ package routes
 import (
 	"api/config"
 	"api/controllers"
-	"api/messaging"
+
+	// "api/messaging" needed if using RabbitMQ
 	"api/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -11,24 +12,25 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config) {
+	// needed if using RabbitMQ
 	// Initialize RabbitMQ
-	rmq, err := messaging.NewRabbitMQ(cfg.RabbitMQURL)
-	if err != nil {
-		panic("Failed to connect to RabbitMQ: " + err.Error())
-	}
+	// rmq, err := messaging.NewRabbitMQ(cfg.RabbitMQURL)
+	// if err != nil {
+	// 	panic("Failed to connect to RabbitMQ: " + err.Error())
+	// }
 
 	// Setup RabbitMQ exchange and queues
-	if err := rmq.DeclareExchange("sync_exchange", "direct"); err != nil {
-		panic("Failed to declare exchange: " + err.Error())
-	}
+	// if err := rmq.DeclareExchange("sync_exchange", "direct"); err != nil {
+	// 	panic("Failed to declare exchange: " + err.Error())
+	// }
 
-	if _, err := rmq.DeclareQueue("sync_queue"); err != nil {
-		panic("Failed to declare queue: " + err.Error())
-	}
+	// if _, err := rmq.DeclareQueue("sync_queue"); err != nil {
+	// 	panic("Failed to declare queue: " + err.Error())
+	// }
 
-	if err := rmq.BindQueue("sync_queue", "sync_exchange", "sync.trigger"); err != nil {
-		panic("Failed to bind queue: " + err.Error())
-	}
+	// if err := rmq.BindQueue("sync_queue", "sync_exchange", "sync.trigger"); err != nil {
+	// 	panic("Failed to bind queue: " + err.Error())
+	// }
 
 	// Health check
 	router.GET("/api/v1/ping", controllers.HealthCheck)
@@ -42,6 +44,6 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	protectedRoutes.Use(middleware.JWTAuthMiddleware(cfg.JWTSecret))
 	{
 		protectedRoutes.GET("/user/profile", controllers.GetUserProfile(db))
-		protectedRoutes.POST("/sync/trigger", controllers.TriggerSync(rmq))
+		// protectedRoutes.POST("/sync/trigger", controllers.TriggerSync(rmq)) needed if using RabbitMQ
 	}
 }
